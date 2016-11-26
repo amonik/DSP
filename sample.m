@@ -1,16 +1,14 @@
-filename = 'AnitWhatYouDoByJimmieLunceford.mp3';
+%My graphics hardware was causing mathlab crash, using software graphics
+opengl('save', 'software');
+%load the wav file
+filename = 'jimmielunceford.wav';
+%Read it and sample it.
 [signal,fs] = audioread(filename,'native');
-
+%plot the wav file
 t = linspace(0, length(signal)/fs, length(signal));
 figure
 plot(t,signal)
 xlabel('time');
-x = 14;
-NFFT = 2^x;
-f = linspace(0,fs,NFFT);
-samples = abs(fft(signal,NFFT));
-figure
-plot(f(1:NFFT/2),samples(1:NFFT/2))
-xlabel('Frequecy');
+
 
 
