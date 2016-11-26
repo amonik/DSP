@@ -1,5 +1,6 @@
 filename = 'AnitWhatYouDoByJimmieLunceford.mp3';
 [signal,fs] = audioread(filename,'native');
+
 t = linspace(0, length(signal)/fs, length(signal));
 figure
 plot(t,signal)
