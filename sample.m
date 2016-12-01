@@ -1,3 +1,9 @@
+bitRate = 8; %vary and see what signal to noise Ratio will be
+filterOrder = 10; %vary to see how changes filter
+minValue = -1; %min Value of the Quanization
+maxValue = 1; %Max Value of the Quanization
+mu = 255; %vary this see what happens
+
 %My graphics hardware was causing mathlab crash, using software graphics
 opengl('save', 'software');
 %load the wav file
@@ -7,12 +13,9 @@ filename = 'jimmielunceford_excerpt.wav';
 n = length(signal);
 %plot the wav file
 rangeOfSignal = range(signal);
-bitRate = 8;
 quantizationRange = rangeOfSignal/(2^bitRate); % quantization range
 quantizationInterval = min(signal):quantizationRange:max(signal);
-minValue = -1;
-maxValue = 1;
-mu = 255; %vary this see what happens
+
 
 %normaize
 signalA = signal./(max(signal));
@@ -42,15 +45,6 @@ signalRecover = inverseQuantization.*max(signal);
 
 t = linspace(0, length(signal)/fs, length(signal));
 
-figure
-plot(t, signalRecover)
-title('Recovered Signal');
-
-
-figure
-plot(t,signal)
-title('Orignal Signal');
-
 uniqueValuesInQuantizedSignal = unique(quantizedSignalFinal);
 %sound(signal,fs);
 
@@ -67,6 +61,61 @@ signalNoiseRatio = (RMS_signal/RMS_error)^2;
 signalNoiseRatioDB = 10*log10(RMS_signal/RMS_error)^2;
 
 %filtering
+
+%take FFT of signal
+signalFreqency = abs(fft(signal));
+
+[maxAmplitude,maxFrequency] = max(signalFreqency);
+%Get the cutoff frequency
+cutoffFrequency = (maxFrequency + (fs/2))*0.5;
+
+%normalize cutoff frequency
+
+cutoffFrequencyRadians = (2*cutoffFrequency)/fs;  
+
+%apply butter low pass filter
+[b,a] = butter(filterOrder,cutoffFrequencyRadians,'low');
+
+filterRecoveredSignalLow = filter(b,a,quantizedSignalFinal);
+
+%Apply High-pass filter
+[d,c] = butter(filterOrder,cutoffFrequencyRadians,'high');
+filterRecoveredSignalHigh = filter(d,c,quantizedSignalFinal);
+
+
+figure(1)
+plot(t,signal)
+title('Orignal Signal');
+
+figure(2)
+plot(t, signalRecover)
+title('Inverse Quantized Signal');
+
+%plot Signal frequency
+figure(3)
+plot(t,signalFreqency)
+title('frequency of signal');
+
+%plot the quant signal and the low-pass filtered signal
+figure(4)
+freqz(b,a,128,fs);
+title('Filter Charateristics Low-pass')
+
+figure(5)
+freqz(d,b,128,fs);
+title('Filter Charateristics High-pass')
+
+figure(6)
+subplot(2,2,1),plot(quantizedSignalFinal),
+title('Recover Data after Quantization with noise');
+subplot(2,2,2),plot(filterRecoveredSignalLow),
+title('Filtered Signal Low-pass')
+subplot(2,2,3),plot(quantizedSignalFinal),
+title('Recover Data after Quantization with noise');
+subplot(2,2,4),plot(filterRecoveredSignalHigh),
+title('Filtered Signal High-pass')
+
+
 
 
 
